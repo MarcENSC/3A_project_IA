@@ -29,6 +29,7 @@ class DQN_network(nn.Module):
             p.requires_grad = False
 
     def forward(self, input, model):
+        input = input.float()
         if model == "online":
             return self.online(input)
         elif model == "target":

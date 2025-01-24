@@ -25,3 +25,5 @@ typing_extensions==4.8.0
 urllib3==2.0.6
 tensordict==0.3.0
 torchrl==0.3.0
+matplotlib==3.7.5
+opencv-python==4.6.0.66
