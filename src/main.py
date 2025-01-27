@@ -16,8 +16,7 @@ from logs.logger import MetricLogger
 
 use_cuda = torch.cuda.is_available()
 print(f"Using CUDA: {use_cuda}")
-print()
-
+warm_start = True
 save_dir = Path("checkpoints") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)
 
@@ -26,9 +25,22 @@ save_dir.mkdir(parents=True)
 
 mario = DQN_agent(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=save_dir)
 
+if warm_start:
+    checkpoint_path="./checkpoints/2025-01-25T21-36-47/mario_net_8.chkpt"
+    checkpoint = torch.load(checkpoint_path)
+    mario.net.online.load_state_dict(checkpoint['model']['online'])
+    mario.net.target.load_state_dict(checkpoint['model']['target'])
+    mario.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    mario.exploration_rate = 0.43
+    mario.curr_step = checkpoint['curr_step']
+   
+   
+
+
+
 logger = MetricLogger(save_dir)
-import numpy as np
-episodes = 10000
+
+episodes = 20000
 for e in range(episodes):
 
     state,info = env.reset()

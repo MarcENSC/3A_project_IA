@@ -8,7 +8,7 @@ from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 from tensordict import TensorDict
 
 class DQN_agent:
-    def __init__(self, state_dim, action_dim, save_dir,exploration_rate=1,exploration_rate_decay=0.99999975,exploration_rate_min=0.1,gamma=0.99,batch_size = 64,memory_size = 100000):
+    def __init__(self, state_dim, action_dim, save_dir,exploration_rate=1,exploration_rate_decay=0.99999975,exploration_rate_min=0.1,gamma=0.99,batch_size = 64,memory_size = 50000):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.state_dim = state_dim
@@ -109,33 +109,28 @@ class DQN_agent:
 
         # Backpropagate loss through Q_online
         loss = self.update_Q_online(td_est, td_tgt)
-
+        torch.cuda.empty_cache()
         return (td_est.mean().item(), loss)
     def cache(self, state, next_state, action, reward, done):
-            """
-            Store the experience to self.memory (replay buffer)
+        def first_if_tuple(x):
+            return x[0] if isinstance(x, tuple) else x
 
-            Inputs:
-            state (``LazyFrame``),
-            next_state (``LazyFrame``),
-            action (``int``),
-            reward (``float``),
-            done(``bool``))
-            """
-            def first_if_tuple(x):
-                return x[0] if isinstance(x, tuple) else x
-            state = first_if_tuple(state).__array__()
-            next_state = first_if_tuple(next_state).__array__()
+        state = first_if_tuple(state).__array__()
+        next_state = first_if_tuple(next_state).__array__()
 
-            state = torch.tensor(state)
-            next_state = torch.tensor(next_state)
-            action = torch.tensor([action])
-            reward = torch.tensor([reward])
-            done = torch.tensor([done])
+        with torch.no_grad():
+            state = torch.tensor(state, device=self.device)
+            
+            next_state = torch.tensor(next_state, device=self.device)
+            action = torch.tensor([action], device=self.device)
+            reward = torch.tensor([reward], device=self.device)
+            done = torch.tensor([done], device=self.device)
 
-            # self.memory.append((state, next_state, action, reward, done,))
+        # Add to memory and explicitly delete temporary tensors
             self.memory.add(TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}, batch_size=[]))
 
+        # Explicitly delete tensors to help garbage collection
+        del state, next_state, action, reward, done
     def recall(self):
         """
         Retrieve a batch of experiences from memory
@@ -144,11 +139,23 @@ class DQN_agent:
         state, next_state, action, reward, done = (batch.get(key) for key in ("state", "next_state", "action", "reward", "done"))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
     def save(self):
-        save_path = (
-            self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
-        )
+        save_path = self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
         torch.save(
-            dict(model=self.net.state_dict(), exploration_rate=self.exploration_rate),
-            save_path,
-        )
-        print(f"MarioNet saved to {save_path} at step {self.curr_step}")
+            {
+                'model': {
+                    'online': self.net.online.state_dict(),
+                    'target': self.net.target.state_dict()
+                },
+                'optimizer_state_dict': self.optimizer.state_dict(),
+                'exploration_rate': self.exploration_rate,
+                'curr_step': self.curr_step,
+                'hyperparameters': {
+                    'gamma': self.gamma,
+                    'batch_size': self.batch_size,
+                    'burnin': self.burnin,
+                    'learn_every': self.learn_every,
+                    'sync_every': self.sync_every
+                }
+            },
+               save_path
+    )
