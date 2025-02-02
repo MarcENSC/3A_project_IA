@@ -24,8 +24,7 @@ print(env.observation_space.shape)
 
 env = ResizeObservation(env, shape=84)
 env = FrameStack(env, num_stack=4)
-#env = StackedObservation(env)
-env = RecordVideo(env=env, video_folder="videos")
+
 
 print(f"Frame Stack{env.observation_space.shape}")
 

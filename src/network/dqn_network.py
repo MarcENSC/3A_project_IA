@@ -3,6 +3,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import torch.nn as nn
 import numpy as np
+import torch
 
 
 class DQN_network(nn.Module):
@@ -48,3 +49,27 @@ class DQN_network(nn.Module):
             nn.ReLU(),
             nn.Linear(512, output_dim),
         )
+    
+    def load(self, checkpoint_path):
+        checkpoint = torch.load(checkpoint_path)
+        
+        # Load the model weights
+        self.net.online.load_state_dict(checkpoint['model']['online'])
+        self.net.target.load_state_dict(checkpoint['model']['target'])
+
+        # Load the optimizer state
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        # Restore exploration rate and current step
+        self.exploration_rate = checkpoint['exploration_rate']
+        self.curr_step = checkpoint['curr_step']
+
+        # Restore other hyperparameters if needed
+        if 'hyperparameters' in checkpoint:
+            self.gamma = checkpoint['hyperparameters'].get('gamma', self.gamma)
+            self.batch_size = checkpoint['hyperparameters'].get('batch_size', self.batch_size)
+            self.burnin = checkpoint['hyperparameters'].get('burnin', self.burnin)
+            self.learn_every = checkpoint['hyperparameters'].get('learn_every', self.learn_every)
+            self.sync_every = checkpoint['hyperparameters'].get('sync_every', self.sync_every)
+
+        print(f"Loaded checkpoint from {checkpoint_path}")

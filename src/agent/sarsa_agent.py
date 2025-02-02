@@ -7,7 +7,7 @@ import numpy as np
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 from tensordict import TensorDict
 
-class DQN_agent:
+class SARSA_agent:
     def __init__(self, state_dim, action_dim, save_dir,exploration_rate=1,exploration_rate_decay=0.99999975,exploration_rate_min=0.1,gamma=0.99,batch_size = 64,memory_size = 50000):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.best_reward = -float('inf')
@@ -44,12 +44,20 @@ class DQN_agent:
 
     @torch.no_grad()
     def td_target(self, reward, next_state, done):
+        # Calcule la valeur Q pour le next_state avec le modèle "online"
         next_state_Q = self.net(next_state, model="online")
-        best_action = torch.argmax(next_state_Q, axis=1)
-        next_Q = self.net(next_state, model="target")[
-            np.arange(0, self.batch_size), best_action
-        ]
-        return (reward + (1 - done.float()) * self.gamma * next_Q).float()
+
+        # Choisir l'action avec la meilleure valeur Q pour next_state
+        next_action = torch.argmax(next_state_Q, axis=1)  # Sélectionner l'action avec la plus grande Q-value
+
+        # Obtenir la valeur Q associée à cette action à partir du modèle "target"
+        next_Q = self.net(next_state, model="target")[np.arange(0, self.batch_size), next_action]
+
+        # Calculer la cible TD
+        td_target_value = reward + (1 - done.float()) * self.gamma * next_Q
+
+        return td_target_value.float()
+
     
     
     def update_Q_online(self, td_estimate, td_target):
@@ -104,7 +112,7 @@ class DQN_agent:
 
         # Get TD Estimate
         td_est = self.td_estimate(state, action)
-
+        
         # Get TD Target
         td_tgt = self.td_target(reward, next_state, done)
 
@@ -159,7 +167,7 @@ class DQN_agent:
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
     def save(self):
         os.makedirs(self.save_dir, exist_ok=True)
-        save_path = self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
+        save_path = self.save_dir / f"sarsa_net_{int(self.curr_step // self.save_every)}.chkpt"
         torch.save(
             {
                 'model': {
@@ -182,7 +190,7 @@ class DQN_agent:
     
     def save_best_model(self):
         os.makedirs(self.save_dir, exist_ok=True)
-        save_path = self.save_dir / "mario_net_best_reward.chkpt"
+        save_path = self.save_dir / "sarsa_net_best_reward.chkpt"
         torch.save(
             {
                 'model': {
