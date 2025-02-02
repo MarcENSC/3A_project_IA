@@ -1,3 +1,14 @@
+################################################################################################################################################################
+# Description: This file contains the implementation of the SARSA agent. 
+# The DQN agent is a deep Q-learning agent that uses a neural network to approximate the Q-values of the state-action pairs.
+
+
+
+################################################################################################################################################################
+
+
+
+
 import os 
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -15,9 +26,9 @@ class SARSA_agent:
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.save_dir = save_dir
-        self.burnin = 1e4  # min. experiences before training
-        self.learn_every = 3  # no. of experiences between updates to Q_online
-        self.sync_every = 1e4  # no. of experiences between Q_target & Q_online sync
+        self.burnin = 1e4  
+        self.learn_every = 3  
+        self.sync_every = 1e4 
         self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(memory_size, device=torch.device("cpu")))
         self.batch_size = batch_size
         self.gamma = gamma
@@ -34,26 +45,26 @@ class SARSA_agent:
         self.exploration_rate_min = exploration_rate_min
         self.curr_step = 0
 
-        self.save_every = 5e5  # no. of experiences between saving dqn network
+        self.save_every = 5e5  
 
     def td_estimate(self, state, action):
         current_Q = self.net(state, model="online")[
             np.arange(0, self.batch_size), action
-        ]  # Q_online(s,a)
+        ]  
         return current_Q
 
     @torch.no_grad()
     def td_target(self, reward, next_state, done):
-        # Calcule la valeur Q pour le next_state avec le modèle "online"
+     
         next_state_Q = self.net(next_state, model="online")
 
-        # Choisir l'action avec la meilleure valeur Q pour next_state
-        next_action = torch.argmax(next_state_Q, axis=1)  # Sélectionner l'action avec la plus grande Q-value
+       
+        next_action = torch.argmax(next_state_Q, axis=1)  
 
-        # Obtenir la valeur Q associée à cette action à partir du modèle "target"
+      
         next_Q = self.net(next_state, model="target")[np.arange(0, self.batch_size), next_action]
 
-        # Calculer la cible TD
+     
         td_target_value = reward + (1 - done.float()) * self.gamma * next_Q
 
         return td_target_value.float()
@@ -84,11 +95,11 @@ class SARSA_agent:
             action_values = self.net(state, model="online")
             action_idx = torch.argmax(action_values, axis=1).item()
 
-        # decrease exploration_rate
+      
         self.exploration_rate *= self.exploration_rate_decay
         self.exploration_rate = max(self.exploration_rate_min, self.exploration_rate)
 
-        # increment step
+      
         self.curr_step += 1
         return action_idx
     
@@ -107,21 +118,21 @@ class SARSA_agent:
         if self.curr_step % self.learn_every != 0:
             return None, None
 
-        # Sample from memory
+     
         state, next_state, action, reward, done = self.recall()
 
-        # Get TD Estimate
+       
         td_est = self.td_estimate(state, action)
         
-        # Get TD Target
+      
         td_tgt = self.td_target(reward, next_state, done)
 
-        # Backpropagate loss through Q_online
+     
         loss = self.update_Q_online(td_est, td_tgt)
 
 
 
-        current_reward = reward.sum().item()  # Somme des rewards dans le batch
+        current_reward = reward.sum().item()  
         if current_reward > self.best_reward:
             self.best_reward = current_reward
             self.save_best_model()
@@ -141,22 +152,22 @@ class SARSA_agent:
             reward = torch.tensor([reward], device=self.device)
             done = torch.tensor([done], device=self.device)
     
-        # Add to memory and explicitly delete temporary tensors
+    
         self.memory.add(TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}, batch_size=[]))
         
-        # Accumulate the total reward for the episode
-        self.episode_reward += reward.item()  # Use .item() to convert to a scalar
+        
+        self.episode_reward += reward.item()  
     
         if done:
-            # Check if the current episode reward is the best so far
+      
             if self.episode_reward > self.best_reward:
                 self.best_reward = self.episode_reward
                 self.save_best_model()
             
-            # Reset the episode reward for the next episode
+       
             self.episode_reward = 0
     
-        # Explicitly delete tensors to help garbage collection
+       
         del state, next_state, action, reward, done
     def recall(self):
         """
@@ -200,7 +211,7 @@ class SARSA_agent:
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'exploration_rate': self.exploration_rate,
                 'curr_step': self.curr_step,
-                'best_reward': self.episode_reward,  # Save the actual episode reward
+                'best_reward': self.episode_reward,  
                 'hyperparameters': {
                     'gamma': self.gamma,
                     'batch_size': self.batch_size,
@@ -214,19 +225,18 @@ class SARSA_agent:
         print(f"New best reward achieved: {self.episode_reward}. Model saved to {save_path}")
     def load(self, checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
-        
-        # Load the model weights
+     
         self.net.online.load_state_dict(checkpoint['model']['online'])
         self.net.target.load_state_dict(checkpoint['model']['target'])
 
-        # Load the optimizer state
+        
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        # Restore exploration rate and current step
+
         self.exploration_rate = checkpoint['exploration_rate']
         self.curr_step = checkpoint['curr_step']
 
-        # Restore other hyperparameters if needed
+        
         if 'hyperparameters' in checkpoint:
             self.gamma = checkpoint['hyperparameters'].get('gamma', self.gamma)
             self.batch_size = checkpoint['hyperparameters'].get('batch_size', self.batch_size)

@@ -1,3 +1,12 @@
+################################################################################################################################################################
+# Wrappers to preprocess the environment and have specific observation space shape and size for the model
+
+
+################################################################################################################################################################
+
+
+
+
 import gym 
 import os 
 import sys
@@ -6,6 +15,11 @@ from torchvision import transforms as T
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import torch
 from gym.spaces import Box
+
+
+
+
+
 
 class SkipFrame(gym.Wrapper):
     def __init__(self, env, skip):
@@ -19,7 +33,7 @@ class SkipFrame(gym.Wrapper):
         done = False
         truncated = False
         for i in range(self._skip):
-            # Accumulate reward and repeat the same action
+            
             obs, reward, done, truncated, info = self.env.step(action)
             total_reward += reward
             if done or truncated:
@@ -31,7 +45,7 @@ class StackedObservation(gym.ObservationWrapper):
         super().__init__(env)
         self.observation_space = gym.spaces.Box(
             low=0, high=255, 
-            shape=(84, 84, 4),  # 4 channels for 4 frames 
+            shape=(84, 84, 4),  
             dtype=np.uint8
         )
 
@@ -48,7 +62,7 @@ class SkipFrame(gym.Wrapper):
         """Repeat action, and sum reward"""
         total_reward = 0.0
         for i in range(self._skip):
-            # Accumulate reward and repeat the same action
+            
             obs, reward, done, trunk, info = self.env.step(action)
             total_reward += reward
             if done:
