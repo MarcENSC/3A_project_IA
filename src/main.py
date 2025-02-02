@@ -27,12 +27,12 @@ mario = SARSA_agent(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_d
 #mario = DQN_agent(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=save_dir)
 
 if warm_start:
-    checkpoint_path="./checkpoints/2025-01-25T21-36-47/mario_net_8.chkpt"
+    checkpoint_path="./checkpoints/2025-01-28T10-22-55/mario_net_34.chkpt"
     checkpoint = torch.load(checkpoint_path)
     mario.net.online.load_state_dict(checkpoint['model']['online'])
     mario.net.target.load_state_dict(checkpoint['model']['target'])
     mario.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    mario.exploration_rate = 0.43
+    mario.exploration_rate = 0.25
     mario.curr_step = checkpoint['curr_step']
    
    
@@ -59,6 +59,9 @@ for e in range(episodes):
 
         # Agent performs action
         next_state, reward, done, trunc, info = env.step(action)
+
+  
+       
         if done and info["flag_get"]==False:
             reward += -100
         
@@ -82,8 +85,10 @@ for e in range(episodes):
             break 
     
     logger.log_episode()
+    mario.save()
 
     if (e % 20 == 0) or (e == episodes - 1):
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
+    
 mario.save()
 env.close()
