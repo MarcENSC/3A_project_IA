@@ -13,6 +13,11 @@ L'objectif est d'entraîner un agent en utilisant différents algorithmes d'appr
 
 ## Installation et Configuration
 
+0. clone the github repo
+```bash
+git clone https://github.com/MarcENSC/3A_project_IA.git
+cd 3A_project_IA
+```
 ### Avec Conda (Recommandé)
 1. Créer un nouvel environnement conda avec Python 3.8 :
 ```bash
