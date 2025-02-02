@@ -62,13 +62,13 @@ pip install -r requirements.txt
 
 ### Environment Wrappers (src/env_wrappers/)
 - `wrapper.py` : Wrapper principal qui prépare l'environnement pour l'apprentissage
-- `skip_frame_wrapper.py` : Optimise l'apprentissage en permettant de sauter des frames
+- `skip_frame_wrapper.py` : gestion des différents wrappers 
 
 ### Network (src/network/)
 - `dqn_network.py` : Définit l'architecture du réseau de neurones utilisé par l'agent DQN
 
 ### Scripts Principaux
-- `main.py` : Orchestrateur principal qui :
+- `main.py` : script  principal qui :
   - Initialise l'environnement avec les wrappers appropriés
   - Crée l'agent (DQN ou SARSA)
   - Lance l'entraînement
@@ -76,7 +76,7 @@ pip install -r requirements.txt
 
 - `test.py` : Script d'évaluation qui :
   - Charge un modèle entraîné
-  - Exécute des épisodes de test
+  - Exécute un épisode de test
   - Affiche les performances
 
 ## Exécution du projet
