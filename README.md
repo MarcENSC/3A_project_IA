@@ -1,4 +1,4 @@
-# Projet de Renforcement Learning - ENSC 2025
+# Projet de Reinforcement Learning - ENSC 2025
 
 ## Description du Projet
 Ce projet s'inscrit dans le cadre du projet de fin d'études de spécialisation en Intelligence Artificielle à l'École Nationale Supérieure de Cognitique (ENSC), promotion 2025.
