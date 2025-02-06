@@ -13,7 +13,7 @@ L'objectif est d'entraîner un agent en utilisant différents algorithmes d'appr
 
 ## Installation et Configuration
 
-0. clone the github repo
+0. Cloner le répo Github
 ```bash
 git clone https://github.com/MarcENSC/3A_project_IA.git
 cd 3A_project_IA
@@ -89,11 +89,14 @@ pip install -r requirements.txt
 ### Entraînement du modèle
 Pour lancer l'entraînement du modèle :
 ```bash
-python main.py
+python src/main.py
 ```
 
 ### Test du modèle
 Pour tester le modèle entraîné :
 ```bash
-python test.py
+python src/test.py
 ```
+
+⚠️ **Warning:** Pour voir ou ne pas voir visuelllement la progression de l'agent Mario dans l'environnement, il est nécessaire de modifier l'argument dans le fichier **wrapper.py**  à la ligne **34** :  **render_mode** et changer les valeurs entre **rgb_array** ou **human**
+

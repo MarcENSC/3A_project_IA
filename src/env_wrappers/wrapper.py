@@ -12,11 +12,6 @@
 # for training set to "rgb_array"
 ################################################################################################################################################################
 
-
-
-
-
-
 import sys
 import os 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -36,7 +31,7 @@ from src.env_wrappers.skip_frame_wrapper import SkipFrame, GrayScaleObservation,
 
 # if you wish to see the environment, set render_mode="human" instead of "rgb_array"
 # for training set to "rgb_array"
-env = gym.make("SuperMarioBros-1-1-v3", apply_api_compatibility=True,render_mode="rgb_array")
+env = gym.make("SuperMarioBros-1-1-v3", apply_api_compatibility=True,render_mode="human")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 env = SkipFrame(env, skip=4)
 print(env.observation_space.shape)

@@ -27,3 +27,4 @@ tensordict==0.3.0
 torchrl==0.3.0
 matplotlib==3.7.5
 opencv-python==4.6.0.66
+libstdcxx-ng==14.2.0
