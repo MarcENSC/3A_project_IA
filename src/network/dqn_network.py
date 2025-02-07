@@ -53,18 +53,18 @@ class DQN_network(nn.Module):
     def load(self, checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
         
-        # Load the model weights
+       
         self.net.online.load_state_dict(checkpoint['model']['online'])
         self.net.target.load_state_dict(checkpoint['model']['target'])
 
-        # Load the optimizer state
+        
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        # Restore exploration rate and current step
+       
         self.exploration_rate = checkpoint['exploration_rate']
         self.curr_step = checkpoint['curr_step']
 
-        # Restore other hyperparameters if needed
+       
         if 'hyperparameters' in checkpoint:
             self.gamma = checkpoint['hyperparameters'].get('gamma', self.gamma)
             self.batch_size = checkpoint['hyperparameters'].get('batch_size', self.batch_size)
