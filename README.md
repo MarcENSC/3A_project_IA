@@ -1,4 +1,4 @@
-# Projet de Renforcement Learning - ENSC 2025
+# Projet de Reinforcement Learning - ENSC 2025
 
 ## Description du Projet
 Ce projet s'inscrit dans le cadre du projet de fin d'études de spécialisation en Intelligence Artificielle à l'École Nationale Supérieure de Cognitique (ENSC), promotion 2025.
@@ -33,6 +33,25 @@ conda activate projet_IA
 ```bash
 pip install -r requirements.txt
 ```
+
+
+
+## Exécution du projet
+
+### Entraînement du modèle
+Pour lancer l'entraînement du modèle :
+```bash
+python src/main.py
+```
+
+### Test du modèle
+Pour tester le modèle entraîné :
+```bash
+python src/test.py
+```
+
+⚠️ **Warning:** Pour voir ou ne pas voir visuelllement la progression de l'agent Mario dans l'environnement, il est nécessaire de modifier l'argument dans le fichier **wrapper.py**  à la ligne **34** :  **render_mode** et changer les valeurs entre **rgb_array** ou **human** 
+
 
 ## Structure du Projet
 
@@ -84,19 +103,5 @@ pip install -r requirements.txt
   - Exécute un épisode de test
   - Affiche les performances
 
-## Exécution du projet
 
-### Entraînement du modèle
-Pour lancer l'entraînement du modèle :
-```bash
-python src/main.py
-```
-
-### Test du modèle
-Pour tester le modèle entraîné :
-```bash
-python src/test.py
-```
-
-⚠️ **Warning:** Pour voir ou ne pas voir visuelllement la progression de l'agent Mario dans l'environnement, il est nécessaire de modifier l'argument dans le fichier **wrapper.py**  à la ligne **34** :  **render_mode** et changer les valeurs entre **rgb_array** ou **human**
 
